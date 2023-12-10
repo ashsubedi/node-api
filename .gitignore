@@ -8,7 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
+#dist -- allow dist for now
 dist-ssr
 *.local
 
