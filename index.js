@@ -7,14 +7,16 @@ require('dotenv').config() //to get the envionment variables from .env file
 //Database configuration into its own Node module
 //For Connection to MongoDb using Mongoose
 //Below Line: Importing the module
-const Note = require('./models/note') 
+const Note = require('./models/note')
 
-// Middleware - Log the API Calls
+// Middleware - logs information about incoming HTTP requests before passing control to the next middleware in the stack
 const requestLogger = (request, response, next) => {
   console.log('Method:', request.method)
   console.log('Path:  ', request.path)
   console.log('Body:  ', request.body)
   console.log('---')
+
+  // Call the next middleware in the stack
   next()
 }
 
@@ -43,17 +45,25 @@ app.get('/api/notes', (request, response) => {
 //Mongoose's findById method
 app.get('/api/notes/:id', (request, response, next) => {
   Note.findById(request.params.id)
-  .then(note => {
-    if(note){
-      response.json(note)
-    }else{
-      response.status(404).end()
-    }
-  })
-  .catch(error => next(error))
+    .then(note => {
+      if (note) {
+        response.json(note)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(error => next(error))
 })
 
-app.post('/api/notes', (request, response) => {
+// If there is an error during the execution of the Note.findById promise,
+// the catch block is triggered. Inside the catch block, next(error) is called, 
+// passing the error to the next middleware in the chain.
+
+// next is a callback function that is used to pass control to the next middleware in the stack.
+// In Express.js, middleware functions have access to the next function, 
+// and calling it within a middleware function allows the application to move on to the next middleware in the chain
+
+app.post('/api/notes', (request, response, next) => {
   const body = request.body
 
   if (body.content === undefined) {
@@ -67,23 +77,24 @@ app.post('/api/notes', (request, response) => {
     // id: generateId(),
   })
 
-  note.save().then(savedNote => {
-    response.json(savedNote)
-  })
+  note.save()
+    .then(savedNote => {
+      response.json(savedNote)
+    })
+    .catch(error => next(error))
 })
 
 app.put('/api/notes/:id', (request, response, next) => {
-  const body = request.body
-
-  const note = {
-    content: body.content,
-    important: body.important,
-  }
+  const { content, important } = request.body
 
   //Mongoose's findByIdAndUpdate method
   //the optional { new: true } parameter, which cause our event handler 
   //to be called with the new modified document instead of the original
-  Note.findByIdAndUpdate(request.params.id, note, { new: true })
+  Note.findByIdAndUpdate(
+    request.params.id,
+    { content, important },
+    { new: true, runValidators: true, context: 'query' }
+  )
     .then(updatedNote => {
       response.json(updatedNote)
     })
@@ -118,8 +129,11 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
-  } 
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+  }
 
+  // If the error is not explicitly handled above, pass it to the next middleware
   next(error)
 }
 
