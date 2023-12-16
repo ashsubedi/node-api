@@ -19,6 +19,7 @@ const noteSchema = new mongoose.Schema({
   important: Boolean,
 })
 
+//Remove the extra _id from the response
 noteSchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString()
@@ -28,3 +29,7 @@ noteSchema.set('toJSON', {
 })
 
 module.exports = mongoose.model('Note', noteSchema)
+//public interface of the module is defined by setting a value to the module.exports variable
+//That means Note will be accessible
+
+//however the variables mongoose and url will not be accessible or visible to users of the module
