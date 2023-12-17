@@ -1,19 +1,5 @@
 const mongoose = require('mongoose')
-
-mongoose.set('strictQuery', false)
-
-//The following URI comes from the environment Variable from .env file
-const url = process.env.MONGODB_URI
-
-console.log('connecting to', url)
-
-mongoose.connect(url)
-  .then(result => {
-    console.log('connected to MongoDB')
-  })
-  .catch((error) => {
-    console.log('error connecting to MongoDB:', error.message)
-  })
+mongoose.set("bufferTimeoutMS", 30000)
 
 //Validation functionality available in Mongoose
 //We can define specific validation rules for each field in the schema
@@ -40,5 +26,3 @@ noteSchema.set('toJSON', {
 module.exports = mongoose.model('Note', noteSchema)
 //public interface of the module is defined by setting a value to the module.exports variable
 //That means Note will be accessible
-
-//however the variables mongoose and url will not be accessible or visible to users of the module
