@@ -2,6 +2,16 @@ POST http://localhost:3001/api/notes
 Content-Type: application/json
 
 {
-  "content": "il",
-  "important": true
+  "content": "One Piece",
+  "important": true,
+  "userId":"657f87ef0aa18ab1ec0f6128"
+}
+###
+POST http://localhost:3001/api/users
+Content-Type: application/json
+
+{
+    "username": "root",
+    "name": "Superuser",
+    "password": "salainen"
 }
